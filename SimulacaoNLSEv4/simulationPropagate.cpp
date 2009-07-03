@@ -82,7 +82,7 @@ void 	Propagate(double step)
 // Apply nonlinear term with correction
 // Also solve for rho(t) at that point and time (RungeKutta4)
 
-	for(j = 0;j < NPOINTS_R;j++)
+	/*for(j = 0;j < NPOINTS_R;j++)
 	{
 		i = 0;
 		
@@ -98,7 +98,7 @@ void 	Propagate(double step)
 			
 			//Calc rho(t)
 			tmpRho1 = drho(rho[i+j*NPOINTS_T]                   ,Emag_square);
-			tmpRho2 = drho(rho[i+j*NPOINTS_T]+0.5*DELTAT*tmpRho1,Emag_square);
+			tmpRho2 = drho(rho[i+j*NPOINTS_T]+0.5*DELTAT*tmpRho1,Emag_square); //TODO important!
 			tmpRho3 = drho(rho[i+j*NPOINTS_T]+0.5*DELTAT*tmpRho2,Emag_square); //faltam updates a Emag_square
 			tmpRho4 = drho(rho[i+j*NPOINTS_T]+    DELTAT*tmpRho3,Emag_square);
 				
@@ -110,7 +110,7 @@ void 	Propagate(double step)
 			bZ = -absorptionCalc[j]-I*omegaZero/c*n2*Emag_square+ionization(rho[i+j*NPOINTS_T],Emag_square);
 			E[i+j*NPOINTS_T] = E[i+j*NPOINTS_T]*cexp(bZ*step); 
 		}	
-	}
+	}*/
 
 //1) Calculate phi(f,z0)=F[phi(t,z0)]
 // execute fftw forward: fftPhi = F[phi]

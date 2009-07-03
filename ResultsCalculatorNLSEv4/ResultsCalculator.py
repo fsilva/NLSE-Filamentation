@@ -15,7 +15,7 @@ def main():
 	start = time.clock()
 #Get list of directories with results
 	if(len(sys.argv) < 2):
-		results = GetResultsList("./SimulacaoNLSEv4/")
+		results = GetResultsList("../SimulacaoNLSEv4/")
 	else:
 		results = GetResultsList(sys.argv[1])
 

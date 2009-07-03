@@ -127,7 +127,7 @@ void	SetInitialConditions()
 		{
 			t = (double)(j-NPOINTS_T/2)*(double)DELTAT;
 			
-			initialE[i*NPOINTS_T+j] = sqrt(2*Pmax/M_PI/sigmaR/sigmaR)*cexp(
+			initialE[i*NPOINTS_T+j] = sqrt(2*Pmax/M_PI/sigmaR/sigmaR)*cexp( I*t*t*1000e-30+
 											-r*r/sigmaR/sigmaR
 											-t*t/sigmaT/sigmaT-I*2.*M_PI/lambdaZero*r*r/2./f);
 		}
