@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 
 import pytz
 import matplotlib   
@@ -11,6 +12,7 @@ import math
 import commands
 from Scientific.IO import NetCDF
 import time
+from numpy import pi,sqrt,imag
 
 
 
@@ -646,6 +648,8 @@ def 	drawPropagation(ncFile,outfile,outfile2):
 	timescale      = getattr(ncFile, 'timescale')
 	distancescale  = getattr(ncFile, 'distancescale')
 	distance       = getattr(ncFile, 'zDistance')
+        curvature      = getattr(ncFile, 'curvature')
+        spot           = getattr(ncFile, 'beamFWHM')
 
 	#print propagationData.shape
 
@@ -697,6 +701,7 @@ def 	drawPropagation(ncFile,outfile,outfile2):
 	max_ = numpy.zeros((nz))
 	min_ = numpy.zeros((nz))
 	fwhm = numpy.zeros((nz))
+        teoretical_fwhm = numpy.zeros((nz))
 	z = numpy.arange(0,distance[0],distance[0]/nz)
 
 	#ff = open('blah','w')
@@ -725,16 +730,41 @@ def 	drawPropagation(ncFile,outfile,outfile2):
 
 		fwhm[j] = 2*(j0+1)*deltaR[0]
 
-		print i0,j0,'        ',data[nr+i0][j]/max_[j],data[nr+i0-1][j]/max_[j], '   z=',distance[0]/nz*j,'  fwhm=',fwhm[j]
+		#print i0,j0,'        ',data[nr+i0][j]/max_[j],data[nr+i0-1][j]/max_[j], '   z=',distance[0]/nz*j,'  fwhm=',fwhm[j]
+
+        lambda0 = 800e-9 #todo: substitui pelo valor do ficheiro
+        n = 1. #substituir pelo n do argon
+        for j in xrange(nz):
+                z_dist = distance[0]*float(j)/float(nz)
+
+                print curvature[0],spot[0],z_dist
+                
+                A = 1.
+                B = z_dist*n
+                C = 0.
+                D = 1.
+                
+                invQ1 = -1./curvature[0]-1j*lambda0/pi/(spot[0]**2)
+                print invQ1
+        
+                invQ2 = (C+D*invQ1)/(A+B*invQ1)
+                print invQ2
+
+                w = numpy.sqrt(-1./numpy.imag(invQ2)/pi*lambda0)
+                print w,'    end'
+
+                teoretical_fwhm[j] = w
+                #print 'j=',j,' ',teoretical_fwhm[j]
 
 	f = pylab.figure(9,figsize=(11,4.5), dpi=100)
 	f.clf()
 
 	image = f.add_subplot(111)
 	image.plot(z,fwhm)
+        image.plot(z,teoretical_fwhm,':k')
 	image.set_ylabel('FWHM ('+distancescale+')')
 	image.set_xlabel('Distance ('+distancescale+')')
-	image.set_title('Impulse FWHM (spacial domain)')
+	image.set_title('Beam FWHM (spacial domain)')
 
 	f.savefig(outfile2)
 	del image,f

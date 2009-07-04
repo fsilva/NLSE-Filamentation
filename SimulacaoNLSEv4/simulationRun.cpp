@@ -127,9 +127,9 @@ void	SetInitialConditions()
 		{
 			t = (double)(j-NPOINTS_T/2)*(double)DELTAT;
 			
-			initialE[i*NPOINTS_T+j] = sqrt(2*Pmax/M_PI/sigmaR/sigmaR)*cexp( I*t*t*1000e-30+
+			initialE[i*NPOINTS_T+j] = sqrt(2*Pmax/M_PI/sigmaR/sigmaR)*cexp( I*t*t*1000e-30+ //TODO:remove this or add to config file
 											-r*r/sigmaR/sigmaR
-											-t*t/sigmaT/sigmaT-I*2.*M_PI/lambdaZero*r*r/2./f);
+											-t*t/sigmaT/sigmaT-I*2.*M_PI/lambdaZero*r*r/2/curvature); //TODO:check curvature term
 		}
 	}
 	//copy initial conditions into E
@@ -217,7 +217,7 @@ void StartSimulation()
 		dataFile.add_att("Energy",Energy);
 		dataFile.add_att("Pmax",Pmax);
 		dataFile.add_att("pulseT",pulseT);
-		dataFile.add_att("f",f);
+		dataFile.add_att("curvature",curvature);
 		dataFile.add_att("timescale",TIMESCALE);
 		dataFile.add_att("distancescale",DISTANCESCALE);
 		dataFile.add_att("zDistance",zDistance);

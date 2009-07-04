@@ -48,7 +48,7 @@ EXTERN	double		zOutputStep;	 //z distance output step
 EXTERN	double 		Pmax; 	         //Pulse peak power
 EXTERN	double 		Energy; 	     //Pulse Energy
 EXTERN	double 		pulseT;	         //Temporal Width of our initial impulse (E)
-EXTERN	double 		f;	             //Effective Focus of the beam
+EXTERN	double 		curvature;	             //Curvature of the beam
 EXTERN  double 		beamFWHM;		 //gaussian beam diameter
 EXTERN	double 		GVD;		//Group velocity dispersion at the central wavelength
 EXTERN	double 		absorption;	//Absorption of the medium
