@@ -131,7 +131,7 @@ void	SetInitialConditions()
         w0 = sqrt(-1./cimag(invQ2)/M_PI*lambdaZero);
 
         z0 = M_PI*w0*w0/lambdaZero;
-        cout << "w0=" << w0 << "   z0=" << z0;
+        //cout << "w0=" << w0 << "   z0=" << z0;
 	
 
 	

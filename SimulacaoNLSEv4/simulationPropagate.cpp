@@ -82,7 +82,7 @@ void 	Propagate(double step)
 // Apply nonlinear term with correction
 // Also solve for rho(t) at that point and time (RungeKutta4)
 
-	/*for(j = 0;j < NPOINTS_R;j++)
+	for(j = 0;j < NPOINTS_R;j++)
 	{
 		i = 0;
 		
@@ -110,7 +110,7 @@ void 	Propagate(double step)
 			bZ = -absorptionCalc[j]-I*omegaZero/c*n2*Emag_square+ionization(rho[i+j*NPOINTS_T],Emag_square);
 			E[i+j*NPOINTS_T] = E[i+j*NPOINTS_T]*cexp(bZ*step); 
 		}	
-	}*/
+	}
 
 //1) Calculate phi(f,z0)=F[phi(t,z0)]
 // execute fftw forward: fftPhi = F[phi]
@@ -189,7 +189,7 @@ void ApplyTransverseLaplacian(double step)
 				omega = 2.*M_PI*(i-NPOINTS_T)/NPOINTS_T/DELTAT;
 			else omega = 2.*M_PI*i/NPOINTS_T/DELTAT;
 			
-			D = step/2.*I*lambdaZero/(2.*M_PI)/2.*(1+0*omega/omegaZero)/DELTAR/DELTAR; 
+			D = step/2.*I*lambdaZero/(2.*M_PI)/2.*(1+omega/omegaZero)/DELTAR/DELTAR; 
 			
 			triLeft[0]  = 0;
 			triDiag[0]  = 1.0-D*4.;
