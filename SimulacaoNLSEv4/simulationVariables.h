@@ -1,7 +1,7 @@
 
 
 #define NPOINTS_T 	(128)
-#define DELTAT	     1e-15 //0.1fs
+#define DELTAT	     3e-15 //0.1fs
 
 #define NPOINTS_R 	(256)
 #define DELTAR		5e-6 //100 um

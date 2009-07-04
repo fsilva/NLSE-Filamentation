@@ -147,7 +147,7 @@ void	SetInitialConditions()
 			
 			initialE[i*NPOINTS_T+j] = sqrt(2*Pmax/M_PI/sigmaR/sigmaR)*cexp( //I*t*t*1000e-30+ //TODO:remove this or add to config file
 											-r*r/w_l/w_l//sigmaR/sigmaR
-											-t*t/sigmaT/sigmaT-I*2.*M_PI/lambdaZero*r*r/2/R_l-I*atan(z_l/z0)); //TODO:check curvature term
+											-t*t/sigmaT/sigmaT-I*2.*M_PI/lambdaZero*r*r/2/R_l-I*atan(z_l/z0)); 
 		}
 	}
 
