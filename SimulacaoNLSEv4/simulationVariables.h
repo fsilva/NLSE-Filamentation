@@ -3,8 +3,8 @@
 #define NPOINTS_T 	(128)
 #define DELTAT	     1e-15 //0.1fs
 
-#define NPOINTS_R 	(256)
-#define DELTAR		5e-6 //1 um
+#define NPOINTS_R 	(512)
+#define DELTAR		1e-6 //1 um
 
 #define TIMESCALE 	"s"
 #define DISTANCESCALE 	"m"
@@ -49,7 +49,7 @@ EXTERN	double 		Pmax; 	         //Pulse peak power
 EXTERN	double 		Energy; 	     //Pulse Energy
 EXTERN	double 		pulseT;	         //Temporal Width of our initial impulse (E)
 EXTERN	double 		curvature;	             //Curvature of the beam
-EXTERN  double 		beamFWHM;		 //gaussian beam diameter
+EXTERN  double 		spot;		 //gaussian beam diameter
 EXTERN	double 		GVD;		//Group velocity dispersion at the central wavelength
 EXTERN	double 		absorption;	//Absorption of the medium
 EXTERN	double		n2;		    //nonlinear refractive index

@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
 			Energy 		= configParser.GetNumber("Energy");
 			Pmax 		= configParser.GetNumber("Pmax");
 			pulseT   	= configParser.GetNumber("pulseT");
-			beamFWHM 	= configParser.GetNumber("beamFWHM");
+			spot    	= configParser.GetNumber("spot");
 			curvature       = configParser.GetNumber("curvature");
 			GVD 		= configParser.GetNumber("GVD");
 			absorption 	= configParser.GetNumber("absorption");

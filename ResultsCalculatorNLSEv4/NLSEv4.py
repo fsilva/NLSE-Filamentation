@@ -84,7 +84,8 @@ def Process(directory,name):
 		n2  = getattr(simulationFile, 'n2')
 		absorption = getattr(simulationFile, 'absorption')
 		lambda0  = getattr(simulationFile, 'lambda0')
-		beamFWHM  = getattr(simulationFile, 'beamFWHM')
+		spot  = getattr(simulationFile, 'spot')
+		curvature  = getattr(simulationFile, 'curvature')
 		boundaryRatio  = getattr(simulationFile, 'boundaryRatio')
 		boundarySlope  = getattr(simulationFile, 'boundarySlope')
 		boundaryI0     = getattr(simulationFile, 'boundaryI0')
@@ -283,8 +284,10 @@ def Process(directory,name):
 		strings2.append("= "+str(absorption[0])+distancescale+'^-1')
 		strings1.append("lambda0       ")
 		strings2.append("= "+str(lambda0[0])+timescale+'^-1')
-		strings1.append("beamFWHM    ")
-		strings2.append("= "+str(beamFWHM[0])+distancescale)
+		strings1.append("spot    ")
+		strings2.append("= "+str(spot[0])+distancescale)
+                strings1.append("curvature    ")
+		strings2.append("= "+str(curvature[0])+distancescale)
 		strings1.append('')
 		strings2.append('')
 		strings1.append("boundaryRatio    ")
@@ -649,7 +652,7 @@ def 	drawPropagation(ncFile,outfile,outfile2):
 	distancescale  = getattr(ncFile, 'distancescale')
 	distance       = getattr(ncFile, 'zDistance')
         curvature      = getattr(ncFile, 'curvature')
-        spot           = getattr(ncFile, 'beamFWHM')
+        spot           = getattr(ncFile, 'spot')
 
 	#print propagationData.shape
 
@@ -676,13 +679,6 @@ def 	drawPropagation(ncFile,outfile,outfile2):
 				energy += c*epsilon0*(real*real+imag*imag)*deltaT[0]*deltaR[0]
 			#print energy," ",
 			data[nr-j-1][i] = data[nr+j][i] = energy#numpy.log(energy)
-	#dataR = propagationData[0::2]
-	#dataI = propagationData[1::2]
-	#nx = dataR.shape[0]
-	#for i in xrange(dataR.shape[0]):
-	#	for j in xrange(dataR.shape[1]):
-	#		dataR[i][j] = numpy.sqrt(dataR[i][j]**2+dataI[i][j]**2)
-#	absVal = scipy.misc.pilutil.imresize(dataR,(nx,nx*3))
 
 
 	#time = len(dataR)/2.*float(deltaT)
@@ -719,39 +715,44 @@ def 	drawPropagation(ncFile,outfile,outfile2):
 				min__ = data[i][j]
 		min_[j] = min__
 		max_[j] = max__
+
+        oneOverE = 1/2.71828183/2.71828183
 	
+#TODO: change name from FWHM to other
 	for j in xrange(nz):
 		fwhm[j] = 0
 		i0 = -1
 		for i in xrange(nr):
-			if(data[nr+i][j]-min_[j] <= 0.5*(max_[j]-min_[j]) and i0 == -1):
+			if(data[nr+i][j]-min_[j] <= oneOverE*(max_[j]-min_[j]) and i0 == -1):
 				i0 = i
-		j0 = i0+(0.5*(max_[j]-min_[j])-data[nr+i0][j])/(data[nr+i0][j]-data[nr+i0-1][j])
+		j0 = i0+(oneOverE*(max_[j]-min_[j])-data[nr+i0][j])/(data[nr+i0][j]-data[nr+i0-1][j])
 
-		fwhm[j] = 2*(j0+1)*deltaR[0]
+		fwhm[j] = (j0)*deltaR[0] 
+                print fwhm[j], '  simulated'
 
 		#print i0,j0,'        ',data[nr+i0][j]/max_[j],data[nr+i0-1][j]/max_[j], '   z=',distance[0]/nz*j,'  fwhm=',fwhm[j]
 
         lambda0 = 800e-9 #todo: substitui pelo valor do ficheiro
+        radius = spot[0]/2 #spot is the diameter
         n = 1. #substituir pelo n do argon
         for j in xrange(nz):
-                z_dist = distance[0]*float(j)/float(nz)
+                z_dist = distance[0]*float(j+1)/float(nz)
 
-                print curvature[0],spot[0],z_dist
+                #print curvature[0],spot[0],z_dist
                 
                 A = 1.
                 B = z_dist*n
                 C = 0.
                 D = 1.
                 
-                invQ1 = -1./curvature[0]-1j*lambda0/pi/(spot[0]**2)
-                print invQ1
+                invQ1 = 1./curvature[0]-1j*lambda0/pi/(radius**2)
+                #print invQ1
         
                 invQ2 = (C+D*invQ1)/(A+B*invQ1)
-                print invQ2
+                #print invQ2
 
                 w = numpy.sqrt(-1./numpy.imag(invQ2)/pi*lambda0)
-                print w,'    end'
+                print w,'    theoretical'
 
                 teoretical_fwhm[j] = w
                 #print 'j=',j,' ',teoretical_fwhm[j]
@@ -761,10 +762,10 @@ def 	drawPropagation(ncFile,outfile,outfile2):
 
 	image = f.add_subplot(111)
 	image.plot(z,fwhm)
-        image.plot(z,teoretical_fwhm,':k')
-	image.set_ylabel('FWHM ('+distancescale+')')
+        image.plot(z,teoretical_fwhm,'--k')
+	image.set_ylabel('Spot ('+distancescale+')')
 	image.set_xlabel('Distance ('+distancescale+')')
-	image.set_title('Beam FWHM (spacial domain)')
+	image.set_title('Beam Spot (spacial domain)')
 
 	f.savefig(outfile2)
 	del image,f
@@ -983,7 +984,7 @@ def drawEnergy(ncFile,outfile):
 			for j in xrange(nt/2):	
 				real = propagationData[j*2+0][k][i]
 				imag = propagationData[j*2+1][k][i]
-				data[i] += k*(real*real+imag*imag)
+				data[i] += k*(real*real+imag*imag) #TODO :check this calculation : k can be 0
 		#print data[i]
 
 	f = pylab.figure(8,figsize=(11,4.5),dpi=100)

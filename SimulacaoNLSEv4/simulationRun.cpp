@@ -113,11 +113,29 @@ void	SetInitialConditions()
 
 	if(Energy > 1e-15)  //If energy != 0, set right Pmax
 	{
-		
+		//TODO!
 	}
 
-	double r,sigmaR,sigmaT,t;
-	sigmaR = beamFWHM/2.3548*sqrt(2);
+        double w_l,R_l,z_l,z0,w0;
+        double complex invQ1,invQ2;
+        double r,sigmaR,sigmaT,t;
+
+        sigmaR = w_l = spot/2;
+        R_l = -curvature;
+        //calculate z_l,z0,w0
+	z_l = 1/R_l;
+        invQ1 = 1./R_l-1j*lambdaZero/M_PI/(w_l*w_l);
+       
+        invQ2 = invQ1/(1+z_l*invQ1);
+
+        w0 = sqrt(-1./cimag(invQ2)/M_PI*lambdaZero);
+
+        z0 = M_PI*w0*w0/lambdaZero;
+        cout << "w0=" << w0 << "   z0=" << z0;
+	
+
+	
+	//sigmaR = spot/2; //spot is the diameter at 1/e^2
 	sigmaT = pulseT/1.17741;
 	for(i = 0; i < NPOINTS_R;i++)
 	{
@@ -127,11 +145,12 @@ void	SetInitialConditions()
 		{
 			t = (double)(j-NPOINTS_T/2)*(double)DELTAT;
 			
-			initialE[i*NPOINTS_T+j] = sqrt(2*Pmax/M_PI/sigmaR/sigmaR)*cexp( I*t*t*1000e-30+ //TODO:remove this or add to config file
-											-r*r/sigmaR/sigmaR
-											-t*t/sigmaT/sigmaT-I*2.*M_PI/lambdaZero*r*r/2/curvature); //TODO:check curvature term
+			initialE[i*NPOINTS_T+j] = sqrt(2*Pmax/M_PI/sigmaR/sigmaR)*cexp( //I*t*t*1000e-30+ //TODO:remove this or add to config file
+											-r*r/w_l/w_l//sigmaR/sigmaR
+											-t*t/sigmaT/sigmaT-I*2.*M_PI/lambdaZero*r*r/2/R_l-I*atan(z_l/z0)); //TODO:check curvature term
 		}
 	}
+
 	//copy initial conditions into E
 	memcpy(E,initialE,sizeof(double complex)*NPOINTS_T*NPOINTS_R);
 	
@@ -225,7 +244,7 @@ void StartSimulation()
 		dataFile.add_att("absorption",absorption);
 		dataFile.add_att("lambda0",lambdaZero);
 		dataFile.add_att("desiredError",desiredError);
-		dataFile.add_att("beamFWHM",beamFWHM);
+		dataFile.add_att("spot",spot);
 		dataFile.add_att("boundaryRatio",boundaryRatio);
 		dataFile.add_att("boundarySlope",boundarySlope);
 		dataFile.add_att("boundaryI0",boundaryI0);
