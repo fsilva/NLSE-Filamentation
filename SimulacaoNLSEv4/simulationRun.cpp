@@ -218,12 +218,13 @@ void StartSimulation()
 		NcDim* rDim = dataFile.add_dim("r", NPOINTS_R);
 		NcDim* tDim = dataFile.add_dim("time", NPOINTS_T*2);
 		NcDim* fDim = dataFile.add_dim("omega", NPOINTS_T*2);
-		NcDim* zDim = dataFile.add_dim("z",int(zDistance/zOutputStep)); 
+		//NcDim* zDim = dataFile.add_dim("z",int(zDistance/zOutputStep));
+                NcDim* zDim = dataFile.add_dim("z");  
 
-		dataSpectrum = dataFile.add_var("Spectrum", ncDouble, fDim, rDim, zDim);		
-		dataImpulse  = dataFile.add_var("Impulse", ncDouble, tDim, rDim, zDim);
+		dataSpectrum = dataFile.add_var("Spectrum", ncDouble, zDim, rDim, fDim);		
+		dataImpulse  = dataFile.add_var("Impulse", ncDouble, zDim, rDim, tDim);
 
-		dataRho  = dataFile.add_var("ElectronDensity", ncDouble, tDim, rDim, zDim);
+		dataRho  = dataFile.add_var("ElectronDensity", ncDouble, zDim, rDim, tDim);
 
 		dataZStep  = dataFile.add_var("zStep", ncDouble, zDim);
 		dataError  = dataFile.add_var("Error", ncDouble, zDim);
@@ -268,12 +269,12 @@ void StartSimulation()
 
 //4.0) Output first data point
 //
-	dataZStep->set_cur(0.);
-	dataZStep->put(&zStep,1);	
-	dataError->set_cur(0.);
-	dataError->put(&error,1);	
+	//dataZStep->set_cur(0.);
+	dataZStep->put_rec(&zStep,0);	
+	//dataError->set_cur(0.);
+	dataError->put_rec(&error,0);	
 
-	for(i = 0;i < NPOINTS_R;i++)
+	/*for(i = 0;i < NPOINTS_R;i++)
 	{
 		dataImpulse->set_cur(0,i,0);
 		dataImpulse->put(reinterpret_cast<double*>(E+NPOINTS_T*i),NPOINTS_T*2,1,1);
@@ -285,7 +286,12 @@ void StartSimulation()
 		
 		dataRho->set_cur(0,i,0);
 		dataRho->put(reinterpret_cast<double*>(rho+NPOINTS_T*i),NPOINTS_T,1,1);	
-	}
+	}*/
+        dataImpulse->put_rec(reinterpret_cast<double*>(E),0);
+	for(i = 0;i < NPOINTS_R;i++)
+	     fftw_execute(forward[i]);
+	dataSpectrum->put_rec(reinterpret_cast<double*>(fftE),0);	
+	dataRho->put_rec(reinterpret_cast<double*>(rho),0);	
 	
 //	outputIndex++;
 
@@ -360,7 +366,7 @@ void StartSimulation()
 		{
 			lastDistance = distance;
 
-			dataZStep->set_cur(outputIndex);
+			/*dataZStep->set_cur(outputIndex);
 			dataZStep->put(&zStep,1);	
 			dataError->set_cur(outputIndex);
 			dataError->put(&error,1);	
@@ -368,11 +374,6 @@ void StartSimulation()
 
 			for(i = 0;i < NPOINTS_R;i++)
 			{
-				/*float energy=0;
-				for(int k=0;k < NPOINTS_T;k++)
-					energy += cabs(E[i*NPOINTS_T+k]);
-				cout << energy << endl;*/
-
 				dataImpulse->set_cur(0,i,outputIndex);
 				dataImpulse->put(reinterpret_cast<double*>(&E[i*NPOINTS_T]),NPOINTS_T*2,1,1);
 				
@@ -383,7 +384,14 @@ void StartSimulation()
 				
 				dataRho->set_cur(0,i,outputIndex);
 				dataRho->put(reinterpret_cast<double*>(rho+NPOINTS_T*i),NPOINTS_T,1,1);	
-			}
+			}*/
+	                dataZStep->put_rec(&zStep,outputIndex);	
+	                dataError->put_rec(&error,outputIndex);
+                        dataImpulse->put_rec(reinterpret_cast<double*>(E),outputIndex);
+                        for(i = 0;i < NPOINTS_R;i++)
+	                    fftw_execute(forward[i]);
+	                dataSpectrum->put_rec(reinterpret_cast<double*>(fftE),outputIndex);	
+	                dataRho->put_rec(reinterpret_cast<double*>(rho),outputIndex);	
 
 //			dataFile.sync();
 			outputIndex++;
@@ -441,7 +449,7 @@ void StartSimulation()
 //Save last set of points, if not saved in the last cycle
 	if(outputIndex < int(zDistance/zOutputStep))
 	{
-		dataZStep->set_cur(outputIndex);
+		/*dataZStep->set_cur(outputIndex);
 		dataZStep->put(&zStep,1);	
 		dataError->set_cur(outputIndex);
 		dataError->put(&error,1);
@@ -457,9 +465,14 @@ void StartSimulation()
 			
 			dataRho->set_cur(0,i,outputIndex);
 			dataRho->put(reinterpret_cast<double*>(rho+NPOINTS_T*i),NPOINTS_T,1,1);	
-		}	
-		
-		
+		}*/
+	        dataZStep->put_rec(&zStep,outputIndex);	
+	        dataError->put_rec(&error,outputIndex);
+                dataImpulse->put_rec(reinterpret_cast<double*>(E),outputIndex);
+                for(i = 0;i < NPOINTS_R;i++)
+	            fftw_execute(forward[i]);
+	        dataSpectrum->put_rec(reinterpret_cast<double*>(fftE),outputIndex);	
+	        dataRho->put_rec(reinterpret_cast<double*>(rho),outputIndex);	
 	}
 	dataFile.add_att("finished","yes");
 

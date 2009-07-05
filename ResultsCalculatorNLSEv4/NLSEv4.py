@@ -71,7 +71,7 @@ def Process(directory,name):
 		files.append('peakRho2.png')
 
 
-		phi = getPhi(simulationFile,0)
+		phi = 0#getPhi(simulationFile,0)
 
 		version    = getattr(simulationFile, 'version') 
 		maxPhi    = [01101011]#getattr(simulationFile, 'maxPhi') 
@@ -371,7 +371,7 @@ def drawImpulses(ncFile,outfile):
 
 	#print propagationData.shape
 
-	nt = propagationData.shape[0]
+	nt = propagationData.shape[1]
 
 	profile_i = numpy.zeros((nt/2),dtype=float)
 	profile_f = numpy.zeros((nt/2),dtype=float)
@@ -380,11 +380,11 @@ def drawImpulses(ncFile,outfile):
 	epsilon0 = 8.85e-12
 
 	for k in xrange(nt/2):
-		real = propagationData[k*2+0][0][0]
-		imag = propagationData[k*2+1][0][0]
+		real = propagationData[0][0][k*2+0]
+		imag = propagationData[0][0][k*2+1]
 		profile_i[k] = math.sqrt(real**2+imag**2)
-		real = propagationData[k*2+0][0][-1]
-		imag = propagationData[k*2+1][0][-1]
+		real = propagationData[-1][0][k*2+0]
+		imag = propagationData[-1][0][k*2+1]
 		profile_f[k] = math.sqrt(real**2+imag**2)
 
 	f = pylab.figure(1,figsize=(6,4.5),dpi=100)
@@ -422,7 +422,7 @@ def drawSpectra(ncFile,outfile):
 
 	#print propagationData.shape
 
-	nf = propagationData.shape[0]
+	nf = propagationData.shape[1]
 
 	profile_i = numpy.zeros((nf/2),dtype=float)
 	profile_f = numpy.zeros((nf/2),dtype=float)
@@ -431,14 +431,14 @@ def drawSpectra(ncFile,outfile):
 	epsilon0 = 8.85e-12
 
 	for k in xrange(nf/2):
-		real = propagationData[k*2+0][0][0]
-		imag = propagationData[k*2+1][0][0]
+		real = propagationData[0][0][k*2+0]
+		imag = propagationData[0][0][k*2+1]
 		if(k >= nf/4):
 			profile_i[k-nf/4] = math.sqrt(real**2+imag**2)
 		else:
 			profile_i[k+nf/4] = math.sqrt(real**2+imag**2)
-		real = propagationData[k*2+0][0][-1]
-		imag = propagationData[k*2+1][0][-1]
+		real = propagationData[-1][0][k*2+0]
+		imag = propagationData[-1][0][k*2+1]
 		if(k >= nf/4):
 			profile_f[k-nf/4] = math.sqrt(real**2+imag**2)
 		else:
@@ -589,16 +589,16 @@ def 	drawCenterSpectrum(ncFile,outfile):
 	distancescale  = getattr(ncFile, 'distancescale')
 	distance       = getattr(ncFile, 'zDistance')
 	
-	nf = propagationData.shape[0]
+	nf = propagationData.shape[2]
 	nr = propagationData.shape[1]
-	nz = propagationData.shape[2]
+	nz = propagationData.shape[0]
 	
 	data = numpy.zeros((nf/2,nz),dtype=float)
 	
 	for i in xrange(nz):
 		for k in xrange(nf/2):
-			real = propagationData[k*2+0][0][i]
-			imag = propagationData[k*2+1][0][i]
+			real = propagationData[i][0][k*2+0]
+			imag = propagationData[i][0][k*2+1]
 			if(k >= nf/4):
 				data[k-nf/4][i] = math.sqrt(real*real+imag*imag)#numpy.log(math.sqrt(real*real+imag*imag))
 			else:
@@ -656,9 +656,9 @@ def 	drawPropagation(ncFile,outfile,outfile2):
 
 	#print propagationData.shape
 
-	nt = propagationData.shape[0]
+	nt = propagationData.shape[2]
 	nr = propagationData.shape[1]
-	nz = propagationData.shape[2]
+	nz = propagationData.shape[0]
 
 	#print nt,nr,nz
 
@@ -674,8 +674,8 @@ def 	drawPropagation(ncFile,outfile,outfile2):
 		for j in xrange(nr):
 			energy = 0
 			for k in xrange(nt/2):
-				real = propagationData[k*2+0][j][i]
-				imag = propagationData[k*2+1][j][i]
+				real = propagationData[i][j][k*2+0]
+				imag = propagationData[i][j][k*2+1]
 				energy += c*epsilon0*(real*real+imag*imag)*deltaT[0]*deltaR[0]
 			#print energy," ",
 			data[nr-j-1][i] = data[nr+j][i] = energy#numpy.log(energy)
@@ -790,9 +790,9 @@ def 	drawPeakIntensity(ncFile,outfile):
 	distancescale  = getattr(ncFile, 'distancescale')
 	distance       = getattr(ncFile, 'zDistance')
 
-	nt = propagationData.shape[0]
+	nt = propagationData.shape[2]
 	nr = propagationData.shape[1]
-	nz = propagationData.shape[2]
+	nz = propagationData.shape[0]
 
 	peakIntensity = numpy.zeros((nz))
 	z = numpy.arange(0,distance[0],distance[0]/nz)
@@ -806,8 +806,8 @@ def 	drawPeakIntensity(ncFile,outfile):
 		peakIntensity[i] = -1e20
 		for j in xrange(nr):
 			for k in xrange(nt/2):
-				real = propagationData[k*2+0][j][i]
-				imag = propagationData[k*2+1][j][i]
+				real = propagationData[i][j][k*2+0]
+				imag = propagationData[i][j][k*2+1]
 				#area = 2.0*3.1415*float(j+1)*deltaR[0]*deltaR[0]
 				#I = c*n*epslon0/2*(real**2+imag**2)/area
 				I = c*n*epslon0/2*(real**2+imag**2)
@@ -852,9 +852,9 @@ def 	drawSpatialProfile(ncFile,outfile):
 
 	#print propagationData.shape
 
-	nt = propagationData.shape[0]
+	nt = propagationData.shape[2]
 	nr = propagationData.shape[1]
-	nz = propagationData.shape[2]
+	nz = propagationData.shape[0]
 
 	#print nt,nr,nz
 
@@ -871,16 +871,16 @@ def 	drawSpatialProfile(ncFile,outfile):
 	for j in xrange(nr):
 		amplitude = 0
 		for k in xrange(nt/2):
-			real = propagationData[k*2+0][j][-1]
-			imag = propagationData[k*2+1][j][-1]
+			real = propagationData[-1][j][k*2+0]
+			imag = propagationData[-1][j][k*2+1]
 			I = c*n*epslon0/2*(real**2+imag**2)
 			amplitude += I
 
 		data_f[nr-j-1] = data_f[nr+j] = c*epslon0*n*amplitude/2
 		amplitude = 0
 		for k in xrange(nt/2):
-			real = propagationData[k*2+0][j][0]
-			imag = propagationData[k*2+1][j][0]
+			real = propagationData[0][j][k*2+0]
+			imag = propagationData[0][j][k*2+1]
 			I = c*n*epslon0/2*(real**2+imag**2)
 			amplitude += I
 
@@ -919,9 +919,9 @@ def 	drawCenterTimeProfile(ncFile,outfile):
 
 	#print propagationData.shape
 
-	nt = propagationData.shape[0]
+	nt = propagationData.shape[2]
 	nr = propagationData.shape[1]
-	nz = propagationData.shape[2]
+	nz = propagationData.shape[0]
 
 	#print nt,nr,nz
 
@@ -932,8 +932,8 @@ def 	drawCenterTimeProfile(ncFile,outfile):
 
 	for i in xrange(nz):
 		for k in xrange(nt/2):
-			real = propagationData[k*2+0][0][i]
-			imag = propagationData[k*2+1][0][i]
+			real = propagationData[i][0][k*2+0]
+			imag = propagationData[i][0][k*2+1]
 			data[k][i] = math.sqrt(real*real+imag*imag)#numpy.log(math.sqrt(real*real+imag*imag))
 			#print energy," ",
 	#dataR = propagationData[0::2]
@@ -973,17 +973,17 @@ def drawEnergy(ncFile,outfile):
 
 	propagationData = propagation.getValue()
 
-	nt = propagationData.shape[0]
+	nt = propagationData.shape[2]
 	nr = propagationData.shape[1]
-	nz = propagationData.shape[2]
+	nz = propagationData.shape[0]
 
 	data = numpy.zeros((nz))
 	for i in xrange(nz):
 		data[i] = 0
 		for k in xrange(nr):
 			for j in xrange(nt/2):	
-				real = propagationData[j*2+0][k][i]
-				imag = propagationData[j*2+1][k][i]
+				real = propagationData[i][k][j*2+0]
+				imag = propagationData[i][k][j*2+1]
 				data[i] += k*(real*real+imag*imag) #TODO :check this calculation : k can be 0
 		#print data[i]
 
@@ -1045,9 +1045,9 @@ def 	drawPeakElectronDensity(ncFile,outfile1,outfile2):
 	distancescale  = getattr(ncFile, 'distancescale')
 	distance       = getattr(ncFile, 'zDistance')
 
-	nt = rhoData.shape[0]
+	nt = rhoData.shape[2]
 	nr = rhoData.shape[1]
-	nz = rhoData.shape[2]
+	nz = rhoData.shape[0]
 
 	peakRho1 = numpy.zeros((nz))
 	z = numpy.arange(0,distance[0],distance[0]/nz)
@@ -1055,7 +1055,7 @@ def 	drawPeakElectronDensity(ncFile,outfile1,outfile2):
 	for i in xrange(nz):
 		peakRho1[i] = 0
 		for k in xrange(nt/2):
-			P = numpy.log(rhoData[k][0][i])
+			P = numpy.log(rhoData[i][0][k])
 			if(P > peakRho1[i]):
 				peakRho1[i] = P
 
@@ -1072,13 +1072,13 @@ def 	drawPeakElectronDensity(ncFile,outfile1,outfile2):
 
 # filament structure
 	data = numpy.zeros((2*nr,nz),dtype=float)
-
+        print 'TODO: SOLVE ELECTRON DENSITY PROBLEM'
 	for i in xrange(nz):
 		for j in xrange(nr):
 			peak = 0
 			for k in xrange(nt/2):
-				if(peak < rhoData[k][j][i]):
-					peak = rhoData[k][j][i]
+				if(peak < rhoData[i][j][k]):
+					peak = rhoData[i][j][k]
 			data[nr-j-1][i] = data[nr+j][i] = peak
 
 	f = pylab.figure(12,figsize=(22,4.5), dpi=100)
