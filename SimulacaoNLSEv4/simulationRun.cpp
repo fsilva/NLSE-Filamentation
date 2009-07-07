@@ -217,6 +217,7 @@ void StartSimulation()
 	{	
 		NcDim* rDim = dataFile.add_dim("r", NPOINTS_R);
 		NcDim* tDim = dataFile.add_dim("time", NPOINTS_T*2);
+                NcDim* tDim_rho = dataFile.add_dim("time_rho", NPOINTS_T);
 		NcDim* fDim = dataFile.add_dim("omega", NPOINTS_T*2);
 		//NcDim* zDim = dataFile.add_dim("z",int(zDistance/zOutputStep));
                 NcDim* zDim = dataFile.add_dim("z");  
@@ -224,7 +225,7 @@ void StartSimulation()
 		dataSpectrum = dataFile.add_var("Spectrum", ncDouble, zDim, rDim, fDim);		
 		dataImpulse  = dataFile.add_var("Impulse", ncDouble, zDim, rDim, tDim);
 
-		dataRho  = dataFile.add_var("ElectronDensity", ncDouble, zDim, rDim, tDim);
+		dataRho  = dataFile.add_var("ElectronDensity", ncDouble, zDim, rDim, tDim_rho);
 
 		dataZStep  = dataFile.add_var("zStep", ncDouble, zDim);
 		dataError  = dataFile.add_var("Error", ncDouble, zDim);

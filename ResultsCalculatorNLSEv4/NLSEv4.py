@@ -1054,7 +1054,7 @@ def 	drawPeakElectronDensity(ncFile,outfile1,outfile2):
 
 	for i in xrange(nz):
 		peakRho1[i] = 0
-		for k in xrange(nt/2):
+		for k in xrange(nt):
 			P = numpy.log(rhoData[i][0][k])
 			if(P > peakRho1[i]):
 				peakRho1[i] = P
@@ -1076,7 +1076,7 @@ def 	drawPeakElectronDensity(ncFile,outfile1,outfile2):
 	for i in xrange(nz):
 		for j in xrange(nr):
 			peak = 0
-			for k in xrange(nt/2):
+			for k in xrange(nt):
 				if(peak < rhoData[i][j][k]):
 					peak = rhoData[i][j][k]
 			data[nr-j-1][i] = data[nr+j][i] = peak

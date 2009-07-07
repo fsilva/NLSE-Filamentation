@@ -1,10 +1,10 @@
 
 
-#define NPOINTS_T 	(128)
-#define DELTAT	     3e-15 //0.1fs
+#define NPOINTS_T 	(512)
+#define DELTAT	     0.1e-15 //0.1fs
 
-#define NPOINTS_R 	(256)
-#define DELTAR		5e-6 //100 um
+#define NPOINTS_R 	(512)
+#define DELTAR		2e-6 //100 um
 
 #define TIMESCALE 	"s"
 #define DISTANCESCALE 	"m"

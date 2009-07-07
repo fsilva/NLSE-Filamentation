@@ -107,7 +107,7 @@ void 	Propagate(double step)
 					   			
 			//calc ionization nonlinear terms (without the E, because we are doing an exp.)
 			
-			bZ = -absorptionCalc[j]-I*omegaZero/c*n2*Emag_square+ionization(rho[i+j*NPOINTS_T],Emag_square);
+			bZ = -absorptionCalc[j]-I*omegaZero/c*n2*Emag_square;//+0*ionization(rho[i+j*NPOINTS_T],Emag_square);
 			E[i+j*NPOINTS_T] = E[i+j*NPOINTS_T]*cexp(bZ*step); 
 		}	
 	}
