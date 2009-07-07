@@ -1,9 +1,9 @@
 
 
 #define NPOINTS_T 	(512)
-#define DELTAT	     0.1e-15 //0.1fs
+#define DELTAT	     0.25e-15 //0.1fs
 
-#define NPOINTS_R 	(512)
+#define NPOINTS_R 	(1024)
 #define DELTAR		2e-6 //100 um
 
 #define TIMESCALE 	"s"
