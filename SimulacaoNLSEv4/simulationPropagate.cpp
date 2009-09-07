@@ -9,7 +9,7 @@
 #include <memory.h>
 #include <fftw3.h>
 #include <time.h>
-#include <netcdfcpp.h>
+#include <netcdf/netcdfcpp.h>
 //#include <clapack.h>
 using namespace std;
 
