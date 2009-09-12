@@ -301,7 +301,7 @@ void StartSimulation()
 	last_time = time(0l);
 
 	for(distance = 0;distance < zDistance;)
-	{
+	{ cout << zStep << endl;
 //4.1)
 //    Adaptive Step Size trial propagations
 
@@ -346,7 +346,7 @@ void StartSimulation()
 
 		error =  fabs(uF-uC)/uF;
 
-		if(fabs(zStep) < zOutputStep*1e-5)
+		if(fabs(zStep) < zOutputStep*1e-20)
 		{	
 			cout << "zStep converged to Zero. desiredError too low. Aborting." << endl;
 			return;

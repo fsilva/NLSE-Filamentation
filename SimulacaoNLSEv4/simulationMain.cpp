@@ -42,6 +42,7 @@ int main(int argc, char *argv[])
 		configFileName = "default.conf";
 	else
 		configFileName = argv[1];
+	cout << configFileName.c_str() << endl;
 
 	if(configParser.Process(configFileName.c_str()))
 	{	

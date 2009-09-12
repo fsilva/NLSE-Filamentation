@@ -2,6 +2,7 @@
 
 import pytz
 import matplotlib   
+matplotlib.use('Agg')
 import pylab
 import numpy
 import scipy
@@ -342,8 +343,8 @@ def Process(directory,name):
 
 #		surface.write_to_png("./Results/"+directory+".png")
 		#surface.write_to_png("./Results/"+directory+".png")
-		surface.write_to_png("../Results/"+directory+".png")
-		surface.write_to_png("./Results/"+directory+".png")
+		surface.write_to_png("../Results/"+directory+".png") #directory must exist (IOError otherwise)
+		surface.write_to_png("./Results/"+directory+".png")  #directory must exist (IOError otherwise)
 
 		for f in files:
 			os.system('rm '+f)
@@ -1054,13 +1055,18 @@ def 	drawPeakElectronDensity(ncFile,outfile1,outfile2):
 
 	for i in xrange(nz):
 		peakRho1[i] = 0
-		for k in xrange(nt):
-			P = numpy.log(rhoData[i][0][k])
-			if(P > peakRho1[i]):
-				peakRho1[i] = P
+                for j in xrange(nr):
+                    for k in xrange(nt):
+                        P = rhoData[i][j][k]
+                        if(P < 0):
+                            print 'BIG PROBLEM rho < 0 (=',P
+                        if(P > peakRho1[i]):
+                            peakRho1[i] = P
+
 
 	f = pylab.figure(13,figsize=(11,4.5), dpi=100)
 	f.clf()
+	print peakRho1
 
 	image = f.add_subplot(111)
 	image.plot(z,peakRho1)

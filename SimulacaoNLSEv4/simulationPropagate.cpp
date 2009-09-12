@@ -23,25 +23,40 @@ void ApplyTransverseLaplacian(double step);
 /////////////////////////////////////////////////////////////
 // Helper functions for nonlinear contribution calculation
 //
+//
+inline double multiply_sigmaK(double Emag_square,int n)
+{
+	return sigmaK*pow(Emag_square,n);
+       // if we just did sigmaK*pow(Emag_square,n) we would be multiplying a small number by a bi number
+       // this way my multiply two numbers closer to one
+       double x = Emag_square * 1e-15;
+       double sigmaK_higher = sigmaK*pow(1e15,n);
+       return sigmaK_higher*pow(x,n);       
+}
 
 inline double drho(double current_rho,double Emag_square)
 {
-	return sigmaK*(rho_neutral-current_rho)*pow(Emag_square,K)+
-				                     sigma/Ui*current_rho*Emag_square;
+//	return 0;
+	return (rho_neutral-current_rho)*multiply_sigmaK(Emag_square,n)+
+	                     sigma/Ui*current_rho*Emag_square;
 }
 
 
 inline double complex ionization(double current_rho,double Emag_square)
 {
-	return -1*I*M_PI/(lambdaZero*n*n*rhoC)*current_rho
-			                      -sigma/2*current_rho
-								  -Ui*sigmaK/2*pow(Emag_square,K-1)*(rho_neutral-current_rho);
+	return -sigma/2*current_rho//-0*1.*I*M_PI/(lambdaZero*n*n*rhoC)*current_rho
+			  -Ui/2.*multiply_sigmaK(Emag_square,K-1)*(rho_neutral-current_rho);
 }
 
 inline double cmag_square(double complex number)
 {
 	double real = creal(number),imag = cimag(number);
 	return real*real+imag*imag;
+}
+
+inline double complex polarization_terms(int j,double current_rho, double complex E)
+{
+        return E*(-absorptionCalc[j]+I*omegaZero/c*n2*cmag_square(E)+ionization(current_rho,cmag_square(E)));
 }
 	
 /////////////////////////////////////////////////////////////////////////////
@@ -54,6 +69,7 @@ void 	Propagate(double step)
 {
 	double 		omega,k,Emag_square;
 	double 		tmpRho1,tmpRho2,tmpRho3,tmpRho4;
+	double complex	tmpE1,tmpE2,tmpE3,tmpE4;
 	double 		complex 	bZ;
 	int 		i,j;
 
@@ -87,28 +103,40 @@ void 	Propagate(double step)
 		i = 0;
 		
 		rho[0+j*NPOINTS_T] = 0;
-		
-		Emag_square = cmag_square(E[i+j*NPOINTS_T]);
-		bZ = -absorptionCalc[j]-I*omegaZero/c*n2*Emag_square+ionization(rho[0+j*NPOINTS_T],Emag_square);
-		E[0+j*NPOINTS_T] = E[0+j*NPOINTS_T]*cexp(bZ*step); 
-		
+	
+		tmpRho1 = drho(rho[0+j*NPOINTS_T]  ,cmag_square(E[i+j*NPOINTS_T]));
+		tmpE1   = polarization_terms(j,rho[i-1+j*NPOINTS_T],E[i+j*NPOINTS_T]);
+
+                //Second step
+		tmpRho2 = drho(rho[0+j*NPOINTS_T]+DELTAT*tmpRho1,cmag_square(E[i+j*NPOINTS_T]+tmpE1*DELTAT));
+		tmpE2   = polarization_terms(j,rho[0+j*NPOINTS_T]+DELTAT*tmpRho1,E[i+j*NPOINTS_T]+tmpE1*DELTAT); 
+		//Final
+	        E[i+j*NPOINTS_T] = E[i+j*NPOINTS_T] + DELTAT/2.*(tmpE1+tmpE2);	
+
 		for(i = 1;i < NPOINTS_T;i++)
-		{
-			Emag_square = cmag_square(E[i+j*NPOINTS_T]);
+		{		
+   			//Runge Kutta 4 (for rho and E at the same time)
+			//
+			//First step
+			tmpRho1 = drho(rho[i-1+j*NPOINTS_T]  ,cmag_square(E[i+j*NPOINTS_T]));
+			tmpE1   = polarization_terms(j,rho[i-1+j*NPOINTS_T],E[i+j*NPOINTS_T]);
+
+                        //Second step
+			tmpRho2 = drho(rho[i-1+j*NPOINTS_T]+DELTAT*0.5*tmpRho1,cmag_square(E[i+j*NPOINTS_T]+tmpE1*DELTAT*0.5));
+			tmpE2   = polarization_terms(j,rho[i-1+j*NPOINTS_T]+0.5*DELTAT*tmpRho1,E[i+j*NPOINTS_T]+tmpE1*DELTAT*0.5); 
+
+                        //Third step
+			tmpRho3 = drho(rho[i-1+j*NPOINTS_T]+0.5*DELTAT*tmpRho2,cmag_square(E[i+j*NPOINTS_T]+tmpE2*DELTAT*0.5));
+			tmpE3   = polarization_terms(j,rho[i-1+j*NPOINTS_T]+0.5*DELTAT*tmpRho2,E[i+j*NPOINTS_T]+tmpE2*DELTAT*0.5); 
+
+                        //Fourth step
+			tmpRho4 = drho(rho[i-1+j*NPOINTS_T]+DELTAT*tmpRho3,cmag_square(E[i+j*NPOINTS_T]+tmpE3*DELTAT));
+			tmpE4   = polarization_terms(j,rho[i-1+j*NPOINTS_T]+DELTAT*tmpRho3,E[i+j*NPOINTS_T]+tmpE3*DELTAT); 
 			
-			//Calc rho(t)
-			tmpRho1 = drho(rho[i+j*NPOINTS_T]                   ,Emag_square);
-			tmpRho2 = drho(rho[i+j*NPOINTS_T]+0.5*DELTAT*tmpRho1,Emag_square); //TODO important!
-			tmpRho3 = drho(rho[i+j*NPOINTS_T]+0.5*DELTAT*tmpRho2,Emag_square); //faltam updates a Emag_square
-			tmpRho4 = drho(rho[i+j*NPOINTS_T]+    DELTAT*tmpRho3,Emag_square);
-				
-			rho[i+j*NPOINTS_T] = rho[i-1+j*NPOINTS_T] + 
-				       DELTAT/6.*(tmpRho1+2*tmpRho2+2*tmpRho3+tmpRho4);
-					   			
-			//calc ionization nonlinear terms (without the E, because we are doing an exp.)
-			
-			bZ = -absorptionCalc[j]-I*omegaZero/c*n2*Emag_square;//+0*ionization(rho[i+j*NPOINTS_T],Emag_square);
-			E[i+j*NPOINTS_T] = E[i+j*NPOINTS_T]*cexp(bZ*step); 
+			//Final
+		        rho[i+j*NPOINTS_T] = rho[i-1+j*NPOINTS_T] + DELTAT/6.*(tmpRho1+2*tmpRho2+2*tmpRho3+tmpRho4);	
+		        E[i+j*NPOINTS_T] = E[i+j*NPOINTS_T] + DELTAT/6.*(tmpE1+2*tmpE2+2*tmpE3+tmpE4);
+
 		}	
 	}
 
@@ -126,7 +154,7 @@ void 	Propagate(double step)
 				omega = 2*M_PI*(i-NPOINTS_T)/NPOINTS_T/DELTAT;
 			else omega = 2*M_PI*i/NPOINTS_T/DELTAT;
 			fftE[i+j*NPOINTS_T] = fftE[i+j*NPOINTS_T]*cexp(-GVD/2.*omega*omega*step*I); 
-		}	
+		}
 		
 	ApplyTransverseLaplacian(step);
 

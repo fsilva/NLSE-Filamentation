@@ -66,13 +66,18 @@ int 		ConfigurationParser::Process(const char* fileName)
 	while(!file.eof())
 	{
 		getline(file,str);
-//		cout << str<<endl;
+	//	cout << str <<endl;
 
 //remove whitespace,tabs
 		i =  str.find_first_not_of(" 	");
-		if(i == string::npos)
+	//	cout <<"test2"<<endl;
+		if(i == string::npos || i > str.length())
+		{
 			continue; //Characters not found, ignore line
-			
+		}
+
+		if(str[i] == '#' || str[i]=='\n') //it is a comment or empty line
+		        continue;	
 //find = or whitespace	
 		j = str.find_first_of(" =	",i);
 		if(j == string::npos)
@@ -82,15 +87,11 @@ int 		ConfigurationParser::Process(const char* fileName)
 		k =  str.find_first_not_of(" 	=",j);
 		if(k == string::npos)
 			continue; //Characters not found, ignore line
+                
 
-//		cout << i << " " << j << endl;
-	
 		name = str.substr(i,j-i);
 		value = str.substr(k,str.length()-k);
-//		cout << name << "_\n_" << value <<endl;
 	
-//		cout << name << "   _" << value << "_" << endl;
-		
 		if(value[0] == '[') //iteration parameter
 		{ 
 			i = 1;
@@ -125,19 +126,17 @@ int 		ConfigurationParser::Process(const char* fileName)
 			listValues.push_back(vector<double>());
 			do{
 				j = value.find_first_of(",",i);
-				if(j == string::npos)
-				{
+				if(j > value.length())
+		       	        {
 					j = value.find_first_of(")",i);	
-					if(j == i || j == string::npos)
+					if(j == i || j > value.length())
 					{
 						end = true;
 						continue;
 					}
 				}
-				
 				listVal = value.substr(i,j-i);
 				listValues.back().push_back(atof(listVal.c_str()));
-
 				k++;
 				i = j+1;
 
@@ -153,7 +152,6 @@ int 		ConfigurationParser::Process(const char* fileName)
 			Values.push_back(value);
 		}
 	}
-
 	file.close();
 	return 0; //OK
 }
