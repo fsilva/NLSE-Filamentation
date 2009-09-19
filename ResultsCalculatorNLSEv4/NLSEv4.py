@@ -370,17 +370,16 @@ def drawImpulses(ncFile,outfile):
 	distancescale  = getattr(ncFile, 'distancescale')
 	distance       = getattr(ncFile, 'zDistance')
 
-	#print propagationData.shape
+	print propagationData.shape
 
-	nt = propagationData.shape[1]
+	nt = propagationData.shape[2]
 
 	profile_i = numpy.zeros((nt/2),dtype=float)
 	profile_f = numpy.zeros((nt/2),dtype=float)
 
 	c = 3e8
 	epsilon0 = 8.85e-12
-
-	for k in xrange(nt/2):
+	for k in xrange(int(math.floor(nt/2))):
 		real = propagationData[0][0][k*2+0]
 		imag = propagationData[0][0][k*2+1]
 		profile_i[k] = math.sqrt(real**2+imag**2)
@@ -423,7 +422,7 @@ def drawSpectra(ncFile,outfile):
 
 	#print propagationData.shape
 
-	nf = propagationData.shape[1]
+	nf = propagationData.shape[2]
 
 	profile_i = numpy.zeros((nf/2),dtype=float)
 	profile_f = numpy.zeros((nf/2),dtype=float)
