@@ -301,7 +301,7 @@ void StartSimulation()
 	last_time = time(0l);
 
 	for(distance = 0;distance < zDistance;)
-	{ cout << zStep << endl;
+	{ cout << "         Current Step Size = " << zStep << "     z=" << distance << endl;
 //4.1)
 //    Adaptive Step Size trial propagations
 
@@ -352,7 +352,7 @@ void StartSimulation()
 			return;
 		}
 
-		if(error > 2*desiredError)
+		if(isnan(error) || error > 2*desiredError)
 		{
 			zStep *= 0.5;
 			//cout << "error>2*desirederror -> zStep= " << zStep << endl;
@@ -401,8 +401,17 @@ void StartSimulation()
 			float percentage = (float)(distance)/(float)(zDistance),dt = time(0l)-startTime;
 			float remaining = dt/percentage-dt;
 			last_time = time(0l);
-
-			cout << setw(5) << percentage*100  << " %      z = " << setw(10) << distance << " m " << "   error = " << error << "     Remaining: " << setw(4) << remaining << " s" << endl;
+			
+			cout << setw(5) << percentage*100  << " %      z = " << setw(10) << distance << " m " << "   error = " << error;
+		       if(remaining < 100)
+		       	     cout  << "     Remaining: " << setw(4) << remaining << " s" << endl;
+		       else if(remaining < 3600)
+		       	     cout  << "     Remaining: " << setw(4) << remaining/60. << " min" << endl;
+		       else if(remaining < 24*3600)
+		       	     cout  << "     Remaining: " << setw(4) << remaining/3600. << " h" << endl;
+		       else
+		       	     cout  << "     Remaining: " << setw(4) << remaining/3600./24 << " days"  << endl;
+		       
 		}else if(time(0l)-last_time > 5) //output to console in case > 5 seconds have passed
 		{
 			last_time = time(0l);
@@ -410,7 +419,15 @@ void StartSimulation()
 			float percentage = (float)(distance)/(float)(zDistance),dt = time(0l)-startTime;
 			float remaining = dt/percentage-dt;
 
-			cout << setw(5) << percentage*100  << " %      z = " << setw(10) << distance << " m " << "   error = " << error << "     Remaining: " << setw(4) << remaining << " s" << endl;
+			cout << setw(5) << percentage*100  << " %      z = " << setw(10) << distance << " m " << "   error = " << error;
+		       if(remaining < 100)
+		       	     cout  << "     Remaining: " << setw(4) << remaining << " s" << endl;
+		       else if(remaining < 3600)
+		       	     cout  << "     Remaining: " << setw(4) << remaining/60. << " min" << endl;
+		       else if(remaining < 24*3600)
+		       	     cout  << "     Remaining: " << setw(4) << remaining/3600. << " h" << endl;
+		       else
+		       	     cout  << "     Remaining: " << setw(4) << remaining/3600./24 << " days"  << endl;
 				
 		}
 

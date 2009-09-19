@@ -56,7 +56,7 @@ inline double cmag_square(double complex number)
 
 inline double complex polarization_terms(int j,double current_rho, double complex E)
 {
-	return E*I*omegaZero/c*n2*cmag_square(E);
+	return E*omegaZero/c*n2*cmag_square(E)*I;
 //        return E*(-absorptionCalc[j]+I*omegaZero/c*n2*cmag_square(E)+ionization(current_rho,cmag_square(E)));
 }
 	
@@ -98,15 +98,17 @@ void 	Propagate(double step)
 //4) Apply nonlinear propagation z0->z0+h
 // Apply nonlinear term with correction
 // Also solve for rho(t) at that point and time (RungeKutta4)
-
+#pragma omp parallel for 
 	for(j = 0;j < NPOINTS_R;j++)
 	{
 		for(i = 0;i < NPOINTS_T;i++)
 		{
 		   
 		    tmpE1  = polarization_terms(0,0,E[i+j*NPOINTS_T]);
-		    tmpE2  = polarization_terms(0,0,E[i+j*NPOINTS_T]+tmpE1*step);
-		    E[i+j*NPOINTS_T]  += step/2*(tmpE1+tmpE2);
+		    tmpE2  = polarization_terms(0,0,E[i+j*NPOINTS_T]+tmpE1*step*0.5);
+		    tmpE3  = polarization_terms(0,0,E[i+j*NPOINTS_T]+tmpE2*step*0.5);
+		    tmpE4  = polarization_terms(0,0,E[i+j*NPOINTS_T]+tmpE3*step);
+		    E[i+j*NPOINTS_T]  += step/6.*(tmpE1+2*tmpE2+2*tmpE3+tmpE4);
 		}
 		/*i = 0;
 		
@@ -151,11 +153,14 @@ void 	Propagate(double step)
 
 //1) Calculate phi(f,z0)=F[phi(t,z0)]
 // execute fftw forward: fftPhi = F[phi]
+
+#pragma omp parallel for 
 	for(i = 0;i < NPOINTS_R;i++)
 		fftw_execute(forward[i]);
 
 //2) Apply dispersive propagation z0->z0+h
 
+#pragma omp parallel for 
 	for(j = 0;j < NPOINTS_R;j++)
 		for(i = 0;i < NPOINTS_T;i++)
 		{
@@ -167,10 +172,13 @@ void 	Propagate(double step)
 		
 	ApplyTransverseLaplacian(step);
 
+#pragma omp parallel for 
 	for(i = 0;i < NPOINTS_R;i++)
 		fftw_execute(backward[i]); 
 
 //4.7.1) Renormalize (fftw multiplies data per sqrt(N))
+
+#pragma omp parallel for 
 	for(i = 0;i < NPOINTS_T*NPOINTS_R;i++)
 		E[i] = E[i]/NPOINTS_T;
 
@@ -219,7 +227,7 @@ void ApplyTransverseLaplacian(double step)
 	double omega,invJ;
 	double complex D;
 	
-	
+//#pragma omp parallel for	
 	for(i = 0;i < NPOINTS_T;i++)
 		{
 			if(i >= NPOINTS_T/2)
