@@ -36,7 +36,7 @@ inline double multiply_sigmaK(double Emag_square,int n)
 
 inline double drho(double current_rho,double Emag_square)
 {
-//	return 0;
+	return 0;
 	return (rho_neutral-current_rho)*multiply_sigmaK(Emag_square,n)+
 	                     sigma/Ui*current_rho*Emag_square;
 }
@@ -56,7 +56,8 @@ inline double cmag_square(double complex number)
 
 inline double complex polarization_terms(int j,double current_rho, double complex E)
 {
-        return E*(-absorptionCalc[j]+I*omegaZero/c*n2*cmag_square(E)+ionization(current_rho,cmag_square(E)));
+	return E*I*omegaZero/c*n2*cmag_square(E);
+//        return E*(-absorptionCalc[j]+I*omegaZero/c*n2*cmag_square(E)+ionization(current_rho,cmag_square(E)));
 }
 	
 /////////////////////////////////////////////////////////////////////////////
@@ -100,44 +101,52 @@ void 	Propagate(double step)
 
 	for(j = 0;j < NPOINTS_R;j++)
 	{
-		i = 0;
+		for(i = 0;i < NPOINTS_T;i++)
+		{
+		   
+		    tmpE1  = polarization_terms(0,0,E[i+j*NPOINTS_T]);
+		    tmpE2  = polarization_terms(0,0,E[i+j*NPOINTS_T]+tmpE1*step);
+		    E[i+j*NPOINTS_T]  += step/2*(tmpE1+tmpE2);
+		}
+		/*i = 0;
 		
-		rho[0+j*NPOINTS_T] = 0;
+		//rho[0+j*NPOINTS_T] = 0;
 	
-		tmpRho1 = drho(rho[0+j*NPOINTS_T]  ,cmag_square(E[i+j*NPOINTS_T]));
+		//tmpRho1 = drho(rho[0+j*NPOINTS_T]  ,cmag_square(E[i+j*NPOINTS_T]));
 		tmpE1   = polarization_terms(j,rho[i-1+j*NPOINTS_T],E[i+j*NPOINTS_T]);
 
                 //Second step
-		tmpRho2 = drho(rho[0+j*NPOINTS_T]+DELTAT*tmpRho1,cmag_square(E[i+j*NPOINTS_T]+tmpE1*DELTAT));
-		tmpE2   = polarization_terms(j,rho[0+j*NPOINTS_T]+DELTAT*tmpRho1,E[i+j*NPOINTS_T]+tmpE1*DELTAT); 
+		//tmpRho2 = drho(rho[0+j*NPOINTS_T]+DELTAT*tmpRho1,cmag_square(E[i+j*NPOINTS_T]+tmpE1*DELTAT));
+		tmpE2   = polarization_terms(j,rho[0+j*NPOINTS_T]+DELTAT*tmpRho1,E[i+j*NPOINTS_T]+tmpE1*step); 
 		//Final
-	        E[i+j*NPOINTS_T] = E[i+j*NPOINTS_T] + DELTAT/2.*(tmpE1+tmpE2);	
+	        E[i+j*NPOINTS_T] = E[i+j*NPOINTS_T] + step/2.*(tmpE1+tmpE2);	
 
 		for(i = 1;i < NPOINTS_T;i++)
 		{		
    			//Runge Kutta 4 (for rho and E at the same time)
 			//
 			//First step
-			tmpRho1 = drho(rho[i-1+j*NPOINTS_T]  ,cmag_square(E[i+j*NPOINTS_T]));
+		//	tmpRho1 = drho(rho[i-1+j*NPOINTS_T]  ,cmag_square(E[i+j*NPOINTS_T]));
 			tmpE1   = polarization_terms(j,rho[i-1+j*NPOINTS_T],E[i+j*NPOINTS_T]);
 
                         //Second step
-			tmpRho2 = drho(rho[i-1+j*NPOINTS_T]+DELTAT*0.5*tmpRho1,cmag_square(E[i+j*NPOINTS_T]+tmpE1*DELTAT*0.5));
-			tmpE2   = polarization_terms(j,rho[i-1+j*NPOINTS_T]+0.5*DELTAT*tmpRho1,E[i+j*NPOINTS_T]+tmpE1*DELTAT*0.5); 
+		//	tmpRho2 = drho(rho[i-1+j*NPOINTS_T]+DELTAT*0.5*tmpRho1,cmag_square(E[i+j*NPOINTS_T]+tmpE1*DELTAT*0.5));
+			tmpE2   = polarization_terms(j,rho[i-1+j*NPOINTS_T]+0.5*DELTAT*tmpRho1,E[i+j*NPOINTS_T]+tmpE1*step*0.5); 
 
                         //Third step
-			tmpRho3 = drho(rho[i-1+j*NPOINTS_T]+0.5*DELTAT*tmpRho2,cmag_square(E[i+j*NPOINTS_T]+tmpE2*DELTAT*0.5));
-			tmpE3   = polarization_terms(j,rho[i-1+j*NPOINTS_T]+0.5*DELTAT*tmpRho2,E[i+j*NPOINTS_T]+tmpE2*DELTAT*0.5); 
+		//	tmpRho3 = drho(rho[i-1+j*NPOINTS_T]+0.5*DELTAT*tmpRho2,cmag_square(E[i+j*NPOINTS_T]+tmpE2*DELTAT*0.5));
+			tmpE3   = polarization_terms(j,rho[i-1+j*NPOINTS_T]+0.5*DELTAT*tmpRho2,E[i+j*NPOINTS_T]+tmpE2*step*0.5); 
 
                         //Fourth step
-			tmpRho4 = drho(rho[i-1+j*NPOINTS_T]+DELTAT*tmpRho3,cmag_square(E[i+j*NPOINTS_T]+tmpE3*DELTAT));
-			tmpE4   = polarization_terms(j,rho[i-1+j*NPOINTS_T]+DELTAT*tmpRho3,E[i+j*NPOINTS_T]+tmpE3*DELTAT); 
+		//	tmpRho4 = drho(rho[i-1+j*NPOINTS_T]+DELTAT*tmpRho3,cmag_square(E[i+j*NPOINTS_T]+tmpE3*DELTAT));
+			tmpE4   = polarization_terms(j,rho[i-1+j*NPOINTS_T]+DELTAT*tmpRho3,E[i+j*NPOINTS_T]+tmpE3*step); 
 			
 			//Final
-		        rho[i+j*NPOINTS_T] = rho[i-1+j*NPOINTS_T] + DELTAT/6.*(tmpRho1+2*tmpRho2+2*tmpRho3+tmpRho4);	
-		        E[i+j*NPOINTS_T] = E[i+j*NPOINTS_T] + DELTAT/6.*(tmpE1+2*tmpE2+2*tmpE3+tmpE4);
+		  //      rho[i+j*NPOINTS_T] = rho[i-1+j*NPOINTS_T] + DELTAT/6.*(tmpRho1+2*tmpRho2+2*tmpRho3+tmpRho4);	
 
-		}	
+		        E[i+j*NPOINTS_T] = E[i+j*NPOINTS_T] + step/6.*(tmpE1+2*tmpE2+2*tmpE3+tmpE4);
+
+		}	*/
 	}
 
 //1) Calculate phi(f,z0)=F[phi(t,z0)]
