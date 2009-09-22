@@ -47,29 +47,37 @@ def Process(directory,name):
 
 		files = []
 		drawImpulses(simulationFile,'impulses.png')
+		print 'impulses drawn'
 		files.append('impulses.png')
 		drawSpectra(simulationFile,'spectra.png')
+		print 'spectra drawn'
 		files.append('spectra.png')
 		#fwhmVal = [10,20]#drawFWHM(simulationFile,'fwhm.png')
 		#files.append('fwhm.png')
 		#drawStepAndError(simulationFile,'stepError.png')
 		#files.append('stepError.png')
 		drawPropagation(simulationFile,'impulse.png','spatialFWHM.png')
+		print 'propagation drawn'
 		files.append('impulse.png')
 		files.append('spatialFWHM.png')
 		drawCenterSpectrum(simulationFile,'cspectrum.png')
+		print 'spectrum evolution drawn'
 		files.append('cspectrum.png')
 		drawCenterTimeProfile(simulationFile,'ctimeprofile.png')
+		print 'temporal evolution drawn'
 		files.append('ctimeprofile.png')
 		drawEnergy(simulationFile,'energy.png')
+		print 'energy drawn'
 		files.append('energy.png')
 		drawSpatialProfile(simulationFile,'profile.png')
+		print 'spatial profile evolution drawn'
 		files.append('profile.png')
-		drawPeakIntensity(simulationFile,'peakIntensity.png')
-		files.append('peakIntensity.png')
-		drawPeakElectronDensity(simulationFile,'peakRho1.png','peakRho2.png')
-		files.append('peakRho1.png')
-		files.append('peakRho2.png')
+		#drawPeakIntensity(simulationFile,'peakIntensity.png')
+		#print 'peak intensity drawn'
+		#files.append('peakIntensity.png')
+		#drawPeakElectronDensity(simulationFile,'peakRho1.png','peakRho2.png')
+#		files.append('peakRho1.png')
+#		files.append('peakRho2.png')
 
 
 		phi = 0#getPhi(simulationFile,0)
@@ -108,11 +116,11 @@ def Process(directory,name):
 		plot4 = cairo.ImageSurface.create_from_png("energy.png")
 		plot5 = cairo.ImageSurface.create_from_png("profile.png")
 		plot6 = cairo.ImageSurface.create_from_png("spatialFWHM.png")
-		plot7 = cairo.ImageSurface.create_from_png("peakIntensity.png")
+		#plot7 = cairo.ImageSurface.create_from_png("peakIntensity.png")
 		plot8 = cairo.ImageSurface.create_from_png("impulses.png")
 		plot9 = cairo.ImageSurface.create_from_png("spectra.png")
-		plot10= cairo.ImageSurface.create_from_png("peakRho1.png")
-		plot11= cairo.ImageSurface.create_from_png("peakRho2.png")
+		#plot10= cairo.ImageSurface.create_from_png("peakRho1.png")
+		#plot11= cairo.ImageSurface.create_from_png("peakRho2.png")
 
 		#plot2 = cairo.ImageSurface.create_from_png("spectra.png")
 		#plot3 = cairo.ImageSurface.create_from_png("fwhm.png")
@@ -140,14 +148,14 @@ def Process(directory,name):
 		y = 0
 #plots
 #Peak Rho1
-		width  = plot10.get_width()
-		GraphsY0 = height = plot10.get_height()
-		ctx.save()
-		ctx.set_source_surface(plot10,x,y)
-		ctx.paint()
-		ctx.restore()
-		GraphsX1 += width*0.95
-		y += height
+		#width  = plot10.get_width()
+		#GraphsY0 = height = plot10.get_height()
+		#ctx.save()
+		#ctx.set_source_surface(plot10,x,y)
+		#ctx.paint()
+		#ctx.restore()
+		#GraphsX1 += width*0.95
+		#y += height
 
 #spatial profile
 		width  = plot1.get_width()
@@ -157,6 +165,8 @@ def Process(directory,name):
 		ctx.paint()
 		ctx.restore()
 		y += height
+		GraphsX1 += width*0.95
+		GraphsY0 = height
 	
 #time profile	
 		width  = plot2.get_width()
@@ -197,22 +207,22 @@ def Process(directory,name):
 		y += height
 
 #Peak Power
-		width  = plot7.get_width()
-		height = plot7.get_height()
-		ctx.save()
-		ctx.set_source_surface(plot7,x,y)
-		ctx.paint()
-		ctx.restore()
-		y += height
+		#width  = plot7.get_width()
+		#height = plot7.get_height()
+		#ctx.save()
+		#ctx.set_source_surface(plot7,x,y)
+		#ctx.paint()
+		#ctx.restore()
+		#y += height
 
 #Peak Rho2
-		width  = plot11.get_width()
-		height = plot11.get_height()
-		ctx.save()
-		ctx.set_source_surface(plot11,x,y)
-		ctx.paint()
-		ctx.restore()
-		y += height
+		#width  = plot11.get_width()
+		#height = plot11.get_height()
+		#ctx.save()
+		#ctx.set_source_surface(plot11,x,y)
+		#ctx.paint()
+		#ctx.restore()
+		#y += height
 
 #plots f(r), f(t) (bottom)
 		x = GraphsX0
@@ -376,6 +386,7 @@ def drawImpulses(ncFile,outfile):
 
 	profile_i = numpy.zeros((nt/2),dtype=float)
 	profile_f = numpy.zeros((nt/2),dtype=float)
+	phase_f = numpy.zeros((nt/2),dtype=float)
 
 	c = 3e8
 	epsilon0 = 8.85e-12
@@ -386,13 +397,16 @@ def drawImpulses(ncFile,outfile):
 		real = propagationData[-1][0][k*2+0]
 		imag = propagationData[-1][0][k*2+1]
 		profile_f[k] = math.sqrt(real**2+imag**2)
-
+		phase_f[k] = (numpy.angle(real+imag*1j))
+    
 	f = pylab.figure(1,figsize=(6,4.5),dpi=100)
 	f.clf()
 
 	plot = f.add_subplot(111)   #this nt is 2x the simulation nt (complex numbers)
 	plot.plot(numpy.arange(-nt/4,+nt/4,1)*float(deltaT),profile_i,c='b')
 	plot.plot(numpy.arange(-nt/4,+nt/4,1)*float(deltaT),profile_f,c='r')
+	plot2 = plot.twinx()
+	plot2.plot(numpy.arange(-nt/4,+nt/4,1)*float(deltaT),phase_f,'k-')
 	plot.set_ylabel('E (V' + distancescale+'^-1)')
 	plot.set_xlabel('Time ('+timescale+')')
 	plot.set_title('Initial and Final Temporal Shapes at r=0')
