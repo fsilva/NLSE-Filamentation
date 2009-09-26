@@ -243,6 +243,7 @@ void StartSimulation()
 		dataFile.add_att("distancescale",DISTANCESCALE);
 		dataFile.add_att("zDistance",zDistance);
 		dataFile.add_att("GVD",GVD);
+		dataFile.add_att("TOD",TOD);
 		dataFile.add_att("absorption",absorption);
 		dataFile.add_att("lambda0",lambdaZero);
 		dataFile.add_att("desiredError",desiredError);

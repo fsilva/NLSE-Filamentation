@@ -1,7 +1,7 @@
 
 
 #define NPOINTS_T 	(512)
-#define DELTAT	    1e-15 //0.1fs
+#define DELTAT	    0.25e-15 //0.1fs
 
 #define NPOINTS_R 	(1024)
 #define DELTAR		1e-6 //100 um
@@ -51,6 +51,7 @@ EXTERN	double 		pulseT;	         //Temporal Width of our initial impulse (E)
 EXTERN	double 		curvature;	             //Curvature of the beam
 EXTERN  double 		spot;		 //gaussian beam diameter
 EXTERN	double 		GVD;		//Group velocity dispersion at the central wavelength
+EXTERN	double 		TOD;		//third order  dispersion at the central wavelength
 EXTERN	double 		absorption;	//Absorption of the medium
 EXTERN	double		n2;		    //nonlinear refractive index
 EXTERN	double 		lambdaZero;	//central wavelength of our pulse

@@ -56,8 +56,8 @@ inline double cmag_square(double complex number)
 
 inline double complex polarization_terms(double current_rho, double complex E)
 {
-	return E*omegaZero/c*n2*cmag_square(E)*I;
-//        return E*(-absorptionCalc[j]+I*omegaZero/c*n2*cmag_square(E)+ionization(current_rho,cmag_square(E)));
+	return omegaZero/c*n2*cmag_square(E)*I;
+//        return (-absorptionCalc[j]+I*omegaZero/c*n2*cmag_square(E)+ionization(current_rho,cmag_square(E)));
 }
 	
 
@@ -104,13 +104,23 @@ void 	Propagate(double step)
 	{
 		for(i = 0;i < NPOINTS_T;i++)
 		{
-		   
-		    tmpE1  = polarization_terms(0,E[i+j*NPOINTS_T]);
-		    tmpE2  = polarization_terms(0,E[i+j*NPOINTS_T]+tmpE1*step*0.5);
-		    tmpE3  = polarization_terms(0,E[i+j*NPOINTS_T]+tmpE2*step*0.5);
-		    tmpE4  = polarization_terms(0,E[i+j*NPOINTS_T]+tmpE3*step);
-		    E[i+j*NPOINTS_T]  += step/6.*(tmpE1+2*tmpE2+2*tmpE3+tmpE4);
-//		E[i+j*NPOINTS_T] *= cexp(step*omegaZero/c*n2*cmag_square(E[i+j*NPOINTS_T])*I);	
+		    //RK4
+		    //tmpE1  = polarization_terms(0,E[i+j*NPOINTS_T]);
+		    //tmpE2  = polarization_terms(0,E[i+j*NPOINTS_T]+tmpE1*step*0.5);
+		    //tmpE3  = polarization_terms(0,E[i+j*NPOINTS_T]+tmpE2*step*0.5);
+		    //tmpE4  = polarization_terms(0,E[i+j*NPOINTS_T]+tmpE3*step);
+		    //E[i+j*NPOINTS_T]  += step/6.*(tmpE1+2*tmpE2+2*tmpE3+tmpE4);
+		    // Simple Exponential - multiply by exp(step*(1+i/omegazero*d/dt)*polarization_terms)
+		    // (1+i/omegazero*d/dt)*polarization_terms = (tmpE1+i/omegaZero*tmpE2) 
+		    tmpE1 = polarization_terms(0,E[i+j*NPOINTS_T]);
+		    if(i == 0) // t = 0, must use forward discretization with higher error
+		        tmpE2 = (polarization_terms(0,E[i+j*NPOINTS_T])-polarization_terms(0,E[i+1+j*NPOINTS_T]))/DELTAT;
+		    else if(i == NPOINTS_T-1) // t = max, must use backward discretization with higher error
+		        tmpE2 = (polarization_terms(0,E[i-1+j*NPOINTS_T])-polarization_terms(0,E[i+j*NPOINTS_T]))/DELTAT;
+		    else
+		        tmpE2 = (polarization_terms(0,E[i-1+j*NPOINTS_T])-polarization_terms(0,E[i+1+j*NPOINTS_T]))/2./DELTAT;
+    		        
+    		    E[i+j*NPOINTS_T] *= cexp(step*(tmpE1+I/omegaZero*tmpE2));	
 		}
 		/*i = 0;
 		
@@ -169,7 +179,7 @@ void 	Propagate(double step)
 			if(i >= NPOINTS_T/2)
 				omega = 2*M_PI*(i-NPOINTS_T)/NPOINTS_T/DELTAT;
 			else omega = 2*M_PI*i/NPOINTS_T/DELTAT;
-			fftE[i+j*NPOINTS_T] = fftE[i+j*NPOINTS_T]*cexp(-GVD/2.*omega*omega*step*I); 
+			fftE[i+j*NPOINTS_T] = fftE[i+j*NPOINTS_T]*cexp(-(GVD/2.*omega*omega+TOD/6.*omega*omega*omega)*step*I); 
 		}
 		
 	ApplyTransverseLaplacian(step);

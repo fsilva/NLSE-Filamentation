@@ -70,6 +70,7 @@ int main(int argc, char *argv[])
 			spot    	= configParser.GetNumber("spot");
 			curvature       = configParser.GetNumber("curvature");
 			GVD 		= configParser.GetNumber("GVD");
+			TOD 		= configParser.GetNumber("TOD");
 			absorption 	= configParser.GetNumber("absorption");
 			n2 		    = configParser.GetNumber("n2");
 			lambdaZero 	= configParser.GetNumber("lambdaZero");
