@@ -54,12 +54,13 @@ inline double cmag_square(double complex number)
 	return real*real+imag*imag;
 }
 
-inline double complex polarization_terms(int j,double current_rho, double complex E)
+inline double complex polarization_terms(double current_rho, double complex E)
 {
 	return E*omegaZero/c*n2*cmag_square(E)*I;
 //        return E*(-absorptionCalc[j]+I*omegaZero/c*n2*cmag_square(E)+ionization(current_rho,cmag_square(E)));
 }
 	
+
 /////////////////////////////////////////////////////////////////////////////
 //
 //  Propagate
@@ -98,18 +99,18 @@ void 	Propagate(double step)
 //4) Apply nonlinear propagation z0->z0+h
 // Apply nonlinear term with correction
 // Also solve for rho(t) at that point and time (RungeKutta4)
-//#pragma omp parallel for 
+#pragma omp parallel for 
 	for(j = 0;j < NPOINTS_R;j++)
 	{
 		for(i = 0;i < NPOINTS_T;i++)
 		{
 		   
-		    /*tmpE1  = polarization_terms(0,0,E[i+j*NPOINTS_T]);
-		    tmpE2  = polarization_terms(0,0,E[i+j*NPOINTS_T]+tmpE1*step*0.5);
-		    tmpE3  = polarization_terms(0,0,E[i+j*NPOINTS_T]+tmpE2*step*0.5);
-		    tmpE4  = polarization_terms(0,0,E[i+j*NPOINTS_T]+tmpE3*step);
-		    E[i+j*NPOINTS_T]  += step/6.*(tmpE1+2*tmpE2+2*tmpE3+tmpE4);*/
-		E[i+j*NPOINTS_T] *= cexp(step*omegaZero/c*n2*cmag_square(E[i+j*NPOINTS_T])*I);	
+		    tmpE1  = polarization_terms(0,E[i+j*NPOINTS_T]);
+		    tmpE2  = polarization_terms(0,E[i+j*NPOINTS_T]+tmpE1*step*0.5);
+		    tmpE3  = polarization_terms(0,E[i+j*NPOINTS_T]+tmpE2*step*0.5);
+		    tmpE4  = polarization_terms(0,E[i+j*NPOINTS_T]+tmpE3*step);
+		    E[i+j*NPOINTS_T]  += step/6.*(tmpE1+2*tmpE2+2*tmpE3+tmpE4);
+//		E[i+j*NPOINTS_T] *= cexp(step*omegaZero/c*n2*cmag_square(E[i+j*NPOINTS_T])*I);	
 		}
 		/*i = 0;
 		
@@ -161,7 +162,7 @@ void 	Propagate(double step)
 
 //2) Apply dispersive propagation z0->z0+h
 
-//#pragma omp parallel for 
+#pragma omp parallel for 
 	for(j = 0;j < NPOINTS_R;j++)
 		for(i = 0;i < NPOINTS_T;i++)
 		{
